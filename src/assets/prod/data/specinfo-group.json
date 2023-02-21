@@ -1,0 +1,13 @@
+{
+    "data": 
+    [
+        {
+            "label": "Shasta",
+            "data": "JUNO_GROUP"
+        },
+        {
+            "label": "Non-Shasta",
+            "data": "OTHER_GROUP"
+        }
+    ]
+}

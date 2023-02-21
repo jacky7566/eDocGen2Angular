@@ -1,0 +1,92 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <!-- <p-messages [value]="msgs"></p-messages> -->
+            <p-dialog header="OOS Setup" [(visible)]="showCfgDialog" 
+            [maximizable]="false" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width: '25vw'}">
+                <h5>Setup Out of Spec condition for the selected Mask</h5>
+                <BR>
+                <div *ngFor="let oosConfig of oosConfigs" class="field-checkbox">
+                    <p-checkbox name="oosGrp" [value]="oosConfig.OOS_Key" [(ngModel)]="selectedCfgs" inputId="oosConfig.Id"></p-checkbox>
+                    <label [for]="oosConfig.Id">{{oosConfig.OOS_Key}} <i class="pi {{oosConfig.OOS_Icon}}" style="font-size: 1rem"></i></label>
+                </div>
+                <ng-template pTemplate="footer">                    
+                    <p-button (click)="showCfgDialog=false" label="No" styleClass="p-button-text"></p-button>
+                    <p-button (click)="updateOOSMaskConfigs(this.selectedSpecInfo)" label="Yes" styleClass="p-button-text"></p-button>
+                </ng-template>
+            </p-dialog>
+            <p-toast></p-toast>
+            <p-confirmDialog header="Confirmation" icon="pi pi-exclamation-triangle"></p-confirmDialog>
+            <h5>
+                Spec Info
+            </h5>
+            <p-blockUI [blocked]="blockedDocument">
+                <i class="pi pi-spin pi-spinner" style="font-size: 3rem"></i>
+                <label style="font-size: 2rem">UMC File Uploading...</label>
+            </p-blockUI>
+            <p-blockUI [blocked]="blockedDocumentOOS">
+                <i class="pi pi-spin pi-spinner" style="font-size: 3rem"></i>
+                <label style="font-size: 2rem">OOS Updating...</label>
+            </p-blockUI>
+            <p-table #dt1 [value]="SpecInfoList" dataKey="Id" [rows]="20" [loading]="loading" [rowHover]="true" styleClass="p-datatable-gridlines" [paginator]="true" 
+            [globalFilterFields]="['Mask','Spec_FileName','Spec_Version','EMapVersion']" responsiveLayout="scroll" >            
+            <!-- selectionMode="single" [(selection)]="selectedItem" (onRowSelect)="onRowSelect($event)" -->
+                <ng-template pTemplate="caption">
+					<div class="p-fluid grid">
+                        <div class="field col-12 md:col-1">
+                            <button pButton label="Clear" class="p-button-outlined mb-2" icon="pi pi-filter-slash" (click)="clear(dt1,groupDP)"></button>  
+                        </div>    
+                        <div class="field col-12 md:col-2">
+                            <span class="p-float-label">
+                                <p-dropdown #groupDP [autoDisplayFirst]="false" [options]="SpecInfoGroups" [(ngModel)]="selectedGroup" optionLabel="label"
+                                (onChange)="comboboxOnSelected(selectedGroup)"></p-dropdown>
+                                <label for="groupDP">Select a Group</label>
+                            </span>
+                        </div>
+
+                        <div class="field col-12 md:col-2">
+                            <span class="p-input-icon-left mb-2">
+                                <i class="pi pi-search"></i>
+                                <input pInputText type="text" #filter (input)="onGlobalFilter(dt1, $event)" placeholder="Search Keyword" class="w-full"/>
+                            </span>
+                        </div>                          
+					</div>
+				</ng-template>
+                <ng-template pTemplate="header">      
+                    <tr>
+                        <th style="min-width: 12rem" *ngFor="let item of SpecInfoColList">                    
+                            <div class="flex justify-content-between align-items-center">
+                                {{item}}
+                                <p-columnFilter type="text" field="{{item}}" display="menu" placeholder="Search by name"></p-columnFilter>
+                            </div>
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-SpecInfoList>
+                    <tr [pSelectableRow]="SpecInfoList">
+                        <td>{{SpecInfoList.Mask}}</td>
+                        <td>{{SpecInfoList.Spec_FileName}}</td>
+                        <td>{{SpecInfoList.Spec_Version}}</td>
+                        <td pEditableColumn>
+                            <input #eMapVerInput [(ngModel)]="SpecInfoList.EMapVersion" type="text" (keyup.enter)="updateEMapVersion(SpecInfoList)" pInputText> 
+                        </td>
+                        <td>                                              
+                            <button pButton type="button" (click)="downloadUMCFile(SpecInfoList.Id, SpecInfoList.UMCFileName)" label="{{SpecInfoList.UMCFileName}}" class="p-button-link"></button>
+                            <!-- <p-fileUpload #fileUpload [customUpload]="true" accept=".umc" (uploadHandler)="uploadUMCFile($event,SpecInfoList)"></p-fileUpload> -->
+                            <!-- <p-fileUpload name="FormFile" url="{{umcAPIUrl}}" [customUpload]="true" accept=".umc" (uploadHandler)="uploadUMCFile($event,SpecInfoList)" [auto]="true"></p-fileUpload> -->
+                            <p-fileUpload name="FormFile" url="{{umcAPIUrl}}" accept=".umc" (onUpload)="onUploadUMCFile($event)" (onError)="onUploadUMCFile($event)" (onBeforeUpload)="onBeforeUploadUMCFile($event,SpecInfoList)"></p-fileUpload>
+                        </td>
+                        <td>
+                            <div *ngFor="let oosConfig of SpecInfoList.OOSMaskConfigs">
+                                <div *ngIf="oosConfig.Status=='1'">
+                                    <label style="font-size: 1rem"><i class="pi {{oosConfig.OOS_Icon}}" style="font-size: 1rem"></i> {{oosConfig.OOS_Key}}</label>
+                                </div>                                                           
+                            </div>
+                            <button pButton type="button" (click)="setOOSMaskConfigs(SpecInfoList)" label="OOS Setup" class="p-button-link"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
